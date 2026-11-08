@@ -4,10 +4,12 @@ import com.kata.ecommerce.catalog.domain.Category;
 import com.kata.ecommerce.catalog.domain.Product;
 import com.kata.ecommerce.catalog.dto.ProductRequest;
 import com.kata.ecommerce.catalog.dto.ProductResponse;
+import com.kata.ecommerce.catalog.event.ProductDeletedEvent;
 import com.kata.ecommerce.catalog.mapper.CatalogMapper;
 import com.kata.ecommerce.catalog.repository.ProductRepository;
 import com.kata.ecommerce.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CatalogMapper mapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ProductResponse create(ProductRequest request) {
         Product product = new Product(request.name(), request.price(), request.stockQuantity());
@@ -52,6 +55,9 @@ public class ProductService {
         for (Category category : new HashSet<>(product.getCategories())) {
             category.unlinkProduct(product);
         }
+        // Le module panier écoute cet événement et retire le produit des paniers (le catalogue ne dépend pas du panier).
+        // Publié avant la suppression : le listener s'exécute de façon synchrone, dans la même transaction.
+        eventPublisher.publishEvent(new ProductDeletedEvent(id));
         productRepository.delete(product);
     }
 

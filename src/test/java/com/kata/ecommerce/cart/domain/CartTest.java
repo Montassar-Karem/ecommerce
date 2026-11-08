@@ -113,7 +113,7 @@ class CartTest {
 
     private static Product product(Long id, String name, String price, int stock) {
         Product p = new Product(name, new BigDecimal(price), stock);
-        p.setId(id); // findItem compare les ids, qui viendraient normalement de la base
+        p.setId(id);
         return p;
     }
 }
