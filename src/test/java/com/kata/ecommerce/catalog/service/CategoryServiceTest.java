@@ -6,6 +6,7 @@ import com.kata.ecommerce.catalog.dto.CategoryRequest;
 import com.kata.ecommerce.catalog.mapper.CatalogMapper;
 import com.kata.ecommerce.catalog.repository.CategoryRepository;
 import com.kata.ecommerce.common.exception.ResourceNotFoundException;
+import com.kata.ecommerce.catalog.dto.CategoryUpdateRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -63,5 +64,31 @@ class CategoryServiceTest {
 
         assertThat(category.getProducts()).contains(product);
         verify(categoryRepository, never()).save(any()); // Dirty checking : pas de save() explicite
+    }
+
+    @Test
+    void attachSubCategory_shouldMoveChildUnderParent() {
+        Category parent = new Category("High-Tech", null);
+        Category child = new Category("Téléphones", null);
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(parent));
+        when(categoryRepository.findById(2L)).thenReturn(Optional.of(child));
+
+        categoryService.attachSubCategory(1L, 2L);
+
+        assertThat(child.getParent()).isEqualTo(parent);
+    }
+
+    // Non-régression : renommer ne doit plus détacher la catégorie de son parent
+    @Test
+    void update_shouldNotChangeParent() {
+        Category parent = new Category("High-Tech", null);
+        Category child = new Category("Téléphones", null);
+        parent.addSubCategory(child);
+        when(categoryRepository.findById(2L)).thenReturn(Optional.of(child));
+
+        categoryService.update(2L, new CategoryUpdateRequest("Smartphones", null));
+
+        assertThat(child.getName()).isEqualTo("Smartphones");
+        assertThat(child.getParent()).isEqualTo(parent);
     }
 }

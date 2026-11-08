@@ -78,4 +78,13 @@ class CategoryTest {
         assertThat(category.getProducts()).isEmpty();
         assertThat(product.getCategories()).isEmpty();
     }
+
+    @Test
+    void removeSubCategory_notAChild_shouldThrow() {
+        Category parent = new Category("Parent", null);
+        Category stranger = new Category("Étrangère", null);
+
+        assertThatThrownBy(() -> parent.removeSubCategory(stranger))
+                .isInstanceOf(BusinessException.class);
+    }
 }

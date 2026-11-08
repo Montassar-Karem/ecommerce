@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -27,7 +28,7 @@ class ProductControllerTest {
     @Test
     void create_valid_shouldReturn201WithLocation() throws Exception {
         when(productService.create(any()))
-                .thenReturn(new ProductResponse(1L, "iPhone", new BigDecimal("999.99"), 10));
+                .thenReturn(new ProductResponse(1L, "iPhone", new BigDecimal("999.99"), 10, List.of()));
 
         mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)

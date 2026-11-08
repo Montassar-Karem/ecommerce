@@ -4,6 +4,7 @@ import com.kata.ecommerce.catalog.domain.Category;
 import com.kata.ecommerce.catalog.domain.Product;
 import com.kata.ecommerce.catalog.dto.CategoryRequest;
 import com.kata.ecommerce.catalog.dto.CategoryResponse;
+import com.kata.ecommerce.catalog.dto.CategoryUpdateRequest;
 import com.kata.ecommerce.catalog.mapper.CatalogMapper;
 import com.kata.ecommerce.catalog.repository.CategoryRepository;
 import com.kata.ecommerce.common.exception.ResourceNotFoundException;
@@ -42,11 +43,10 @@ public class CategoryService {
         return mapper.toResponse(findEntityById(id));
     }
 
-    public CategoryResponse update(Long id, CategoryRequest request) {
+    public CategoryResponse update(Long id, CategoryUpdateRequest request) {
         Category category = findEntityById(id);
         category.setName(request.name());
         category.setDescription(request.description());
-        changeParent(category, request.parentId());
         return mapper.toResponse(category);
     }
 
@@ -72,18 +72,19 @@ public class CategoryService {
         return mapper.toResponse(category);
     }
 
-    private void changeParent(Category category, Long newParentId) {
-        Category currentParent = category.getParent();
-        if (newParentId == null) {
-            if (currentParent != null) {
-                currentParent.removeSubCategory(category);
-            }
-            return;
-        }
-        if (currentParent != null && currentParent.getId().equals(newParentId)) {
-            return;
-        }
-        findEntityById(newParentId).addSubCategory(category);
+    // Sert aussi à déplacer : addSubCategory retire de l'ancien parent et bloque les cycles
+    public CategoryResponse attachSubCategory(Long parentId, Long childId) {
+        Category parent = findEntityById(parentId);
+        Category child = findEntityById(childId);
+        parent.addSubCategory(child);
+        return mapper.toResponse(parent);
+    }
+
+    public CategoryResponse detachSubCategory(Long parentId, Long childId) {
+        Category parent = findEntityById(parentId);
+        Category child = findEntityById(childId);
+        parent.removeSubCategory(child); // 409 si child n'est pas un enfant de parent
+        return mapper.toResponse(parent);
     }
 
     private Category findEntityById(Long id) {

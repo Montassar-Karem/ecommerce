@@ -62,8 +62,11 @@ public class Category {
     }
 
     public void removeSubCategory(Category child) {
-        subCategories.remove(child);
-        child.parent = null;
+        if (!subCategories.remove(child)) {
+            throw new BusinessException(
+                    "La catégorie " + child.getId() + " n'est pas une sous-catégorie de " + id);
+        }
+        child.parent = null; // Devient racine, elle n'est pas supprimée
     }
 
 

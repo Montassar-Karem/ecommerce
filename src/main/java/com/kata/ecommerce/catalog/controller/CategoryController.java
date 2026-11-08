@@ -2,6 +2,7 @@ package com.kata.ecommerce.catalog.controller;
 
 import com.kata.ecommerce.catalog.dto.CategoryRequest;
 import com.kata.ecommerce.catalog.dto.CategoryResponse;
+import com.kata.ecommerce.catalog.dto.CategoryUpdateRequest;
 import com.kata.ecommerce.catalog.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +39,8 @@ public class CategoryController {
         return categoryService.findById(id);
     }
 
-    // parentId permet aussi de déplacer la catégorie, ou de la rendre racine (null)
     @PutMapping("/{id}")
-    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
+    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody CategoryUpdateRequest request) {
         return categoryService.update(id, request);
     }
 
@@ -59,5 +59,16 @@ public class CategoryController {
     @DeleteMapping("/{categoryId}/products/{productId}")
     public CategoryResponse unlinkProduct(@PathVariable Long categoryId, @PathVariable Long productId) {
         return categoryService.unlinkProduct(categoryId, productId);
+    }
+
+    @PostMapping("/{parentId}/subcategories/{childId}")
+    public CategoryResponse attachSubCategory(@PathVariable Long parentId, @PathVariable Long childId) {
+        return categoryService.attachSubCategory(parentId, childId);
+    }
+
+    // Supprime le lien : la sous-catégorie devient racine, elle n'est pas supprimée
+    @DeleteMapping("/{parentId}/subcategories/{childId}")
+    public CategoryResponse detachSubCategory(@PathVariable Long parentId, @PathVariable Long childId) {
+        return categoryService.detachSubCategory(parentId, childId);
     }
 }
