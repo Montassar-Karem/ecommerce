@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    // Requête dérivée du nom : WHERE parent_id IS NULL -> les racines de l'arbre
     List<Category> findByParentIsNull();
 }
