@@ -34,10 +34,12 @@ public class Category {
 
     // REMOVE : supprimer une catégorie supprime sa sous-arborescence.
     @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE)
+    @OrderBy("id") // Ordre stable dans les réponses JSON
     private Set<Category> subCategories = new HashSet<>();
 
 
     @ManyToMany
+    @OrderBy("id")
     @JoinTable(name = "category_product",
             joinColumns = @JoinColumn(name = "category_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id"))

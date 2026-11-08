@@ -8,6 +8,8 @@ spring:
       ddl-auto: update
     open-in-view: false   # Ferme la session JPA à la sortie du service
     show-sql: true
+    properties:
+      hibernate.default_batch_fetch_size: 50 # Évite le N+1 : charge les collections LAZY par paquets de 50 (IN ...)
 
 server:
   port: 8080
