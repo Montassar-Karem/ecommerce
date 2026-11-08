@@ -1,18 +1,33 @@
 services:
-    db:
-      image: postgres:16
-      container_name: ecommerce-db
-      environment:
-        POSTGRES_DB: ecommerce
-        POSTGRES_USER: ecommerce
-        POSTGRES_PASSWORD: ecommerce
-      ports:
-        - "5432:5432"
-      volumes:
-        - pgdata:/var/lib/postgresql/data
-      healthcheck:
-        test: [ "CMD-SHELL", "pg_isready -U ecommerce" ] # Commande de test fournie avec Postgres
-        interval: 5s
-        retries: 5
+  db:
+    image: postgres:16
+    container_name: ecommerce-db
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ecommerce
+      POSTGRES_PASSWORD: ecommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecommerce -d ecommerce"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: ecommerce-app
+    depends_on:
+      db:
+        condition: service_healthy # Attend que Postgres accepte réellement les connexions
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/ecommerce # "db" = nom du service dans le réseau Docker (pas localhost)
+      DB_USER: ecommerce
+      DB_PASSWORD: ecommerce
+    ports:
+      - "8080:8080"
+
 volumes:
   pgdata:
